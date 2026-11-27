@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>マナビ証券 投資チャレンジ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --ink:#1c2430; --ink2:#556070; --muted:#8a94a3; --line:#e3e7ec; --grid:#eef1f4;
+  --accent:#0f766e; --accent-soft:#e6f4f2; --bench:#8a94a3;
+  --up:#d1343a; --down:#2563eb; --warn-bg:#fff7e6; --warn-ink:#8a5a00;
+  --radius:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#11151b; --card:#1a2028; --ink:#e8ecf1; --ink2:#aab4c0; --muted:#7c8796; --line:#2b333d; --grid:#232a33;
+    --accent:#2fb3a5; --accent-soft:#16312f; --bench:#7c8796;
+    --up:#ff6b6b; --down:#6ea1ff; --warn-bg:#2e2512; --warn-ink:#f0c26b;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans JP",system-ui,-apple-system,"Hiragino Sans",sans-serif;font-size:15px;line-height:1.6}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+.wrap{max-width:960px;margin:0 auto;padding:0 14px 96px}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.hd{max-width:960px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:17px;letter-spacing:.02em}
+.logo small{display:block;font-size:11px;font-weight:500;color:var(--ink2);letter-spacing:0}
+.hd .sp{flex:1}
+.clock{font-size:12px;color:var(--ink2);text-align:right}
+.live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:5px;vertical-align:1px;animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+nav.tabs{display:flex;gap:4px;max-width:960px;margin:0 auto;padding:0 10px 8px}
+nav.tabs button{flex:1;white-space:nowrap;border:0;background:transparent;color:var(--ink2);padding:8px 4px;border-radius:10px;font-weight:500;font-size:14px}
+nav.tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
+.card h2{margin:0 0 6px;font-size:16px}
+.muted{color:var(--muted)} .ink2{color:var(--ink2)}
+.small{font-size:12.5px}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--ink2)}
+.big{font-size:30px;font-weight:700;letter-spacing:.01em;line-height:1.2;font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.seg{display:inline-flex;flex-shrink:0;white-space:nowrap;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:2px}
+.seg button{border:0;background:transparent;color:var(--ink2);padding:3px 10px;border-radius:7px;font-size:13px}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.list{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.lrow{display:grid;grid-template-columns:1fr 78px 108px;gap:8px;align-items:center;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer;background:transparent;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;color:inherit}
+.lrow:first-child{border-top:0}
+.lrow:hover{background:var(--accent-soft)}
+.lname{font-weight:700;font-size:15px}
+.lsec{font-size:12px;color:var(--muted)}
+.lprice{text-align:right;font-variant-numeric:tabular-nums}
+.lprice b{display:block;font-size:15px}
+.lprice span{font-size:12.5px}
+.lhead{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink2)}
+.chart{position:relative;margin-top:10px;touch-action:pan-y;user-select:none}
+.chart svg{display:block;width:100%;overflow:visible}
+.tip{position:absolute;top:0;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap;display:none;z-index:5}
+.tip b{font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink2);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:16px;height:0;border-top:2px solid;vertical-align:4px;margin-right:5px}
+.legend i.dash{border-top-style:dashed}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (min-width:640px){.grid4{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--bg);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--ink2)}
+.stat .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-weight:500}
+.btn.buy{background:var(--up);border-color:var(--up);color:#fff;font-weight:700}
+.btn.sell{background:var(--down);border-color:var(--down);color:#fff;font-weight:700}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:4px 10px;font-size:13px;border-radius:8px}
+.qty{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.qty input{width:120px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);text-align:right;font-size:16px}
+.msg{margin-top:10px;padding:9px 12px;border-radius:9px;font-size:13.5px}
+.msg.ok{background:var(--accent-soft);color:var(--accent)}
+.msg.ng{background:var(--warn-bg);color:var(--warn-ink)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-weight:500;color:var(--ink2);font-size:12px;text-align:right;padding:6px 4px;border-bottom:1px solid var(--line)}
+td{white-space:nowrap;padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--accent-soft)}
+.news{padding:12px 0;border-top:1px solid var(--line)}
+.news:first-child{border-top:0;padding-top:4px}
+.news .t{font-size:12px;color:var(--muted)}
+.news .h{font-weight:700;margin:2px 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--ink2);margin-right:6px}
+.lesson{font-size:13px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:6px 10px;margin-top:6px}
+.back{border:0;background:transparent;color:var(--accent);font-weight:700;padding:10px 0 0}
+.learn h3{margin:18px 0 4px;font-size:15px}
+.learn p{margin:4px 0;color:var(--ink2)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .box{background:var(--card);border-radius:16px;padding:22px;max-width:420px;width:100%}
+.modal input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;margin:10px 0}
+.foot{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
+.rank td.rk{text-align:center;font-weight:700;font-size:16px;width:48px}
+tr.mine td{background:var(--accent-soft)}
+.spark{width:78px;height:28px;display:block}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="logo">マナビ証券 投資チャレンジ<small>架空の株式市場で投資を体験しよう</small></div>
+    <div class="sp"></div>
+    <div class="clock"><span class="live"></span><span id="clock"></span><br><span id="who"></span></div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-v="market">市場</button>
+    <button data-v="portfolio">わたしの成績</button>
+    <button data-v="rank">ランキング</button>
+    <button data-v="news">ニュース</button>
+    <button data-v="learn">学ぶ</button>
+  </nav>
+</header>
+<div class="wrap" id="main"></div>
+<div id="modal"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   架空の市場データ（実在の企業とは関係ありません）
+   株価水準・値動きの大きさ・業種ごとの性質は日本の実際の株式市場を参考にしています。
+   ============================================================ */
+const STOCKS = [
+  {code:"M01",name:"アカツキ自動車",sector:"自動車",grp:0,base:2850,vol:.28,beta:1.1,eps:280,dps:85,g:.06,desc:"世界中で車を売る大手自動車メーカー。円安になると海外での利益が増えやすい。"},
+  {code:"M02",name:"コメット電機",sector:"電機",grp:1,base:3400,vol:.30,beta:1.1,eps:170,dps:40,g:.07,desc:"家電や工場の機械をつくる総合電機メーカー。"},
+  {code:"M03",name:"ドリームピクセル",sector:"ゲーム",grp:1,base:7800,vol:.38,beta:1.0,eps:310,dps:90,g:.09,desc:"人気ゲームシリーズを持つゲーム会社。新作ゲームの評判で株価が大きく動く。"},
+  {code:"M04",name:"ミナカタ商事",sector:"商社",grp:0,base:4100,vol:.25,beta:1.0,eps:430,dps:140,g:.06,desc:"資源・エネルギー・食料などを世界中で取引する総合商社。"},
+  {code:"M05",name:"ステラ銀行",sector:"銀行",grp:3,base:1650,vol:.27,beta:1.0,eps:160,dps:60,g:.05,desc:"全国に支店を持つ大手銀行。金利が上がると利益が増えやすい。"},
+  {code:"M06",name:"ハルカ製薬",sector:"医薬品",grp:2,base:3200,vol:.26,beta:.6,eps:150,dps:90,g:.04,desc:"新薬を開発する製薬会社。新薬の承認などのニュースで大きく動くことがある。"},
+  {code:"M07",name:"ソラノ通信",sector:"通信",grp:2,base:2100,vol:.18,beta:.5,eps:140,dps:75,g:.03,desc:"スマホの通信回線を提供する会社。業績が安定していて、配当が多め。"},
+  {code:"M08",name:"ツバサ航空",sector:"空運",grp:0,base:2700,vol:.30,beta:1.0,eps:150,dps:50,g:.05,desc:"国内線・国際線を飛ばす航空会社。旅行の人気や燃料の値段に左右される。"},
+  {code:"M09",name:"まんぷく食品",sector:"食品",grp:2,base:4600,vol:.18,beta:.5,eps:200,dps:90,g:.04,desc:"カップめんやお菓子をつくる食品メーカー。景気に左右されにくい。"},
+  {code:"M10",name:"シリカ半導体",sector:"半導体",grp:1,base:9500,vol:.45,beta:1.4,eps:330,dps:60,g:.12,desc:"スマホやAIに使われる半導体の製造装置メーカー。値動きがとても激しい。"},
+  {code:"M11",name:"アオゾラ電力",sector:"電力",grp:2,base:900,vol:.22,beta:.5,eps:70,dps:30,g:.02,desc:"地域に電気を届ける電力会社。"},
+  {code:"M12",name:"ハヤテ鉄道",sector:"鉄道",grp:2,base:3000,vol:.18,beta:.6,eps:190,dps:60,g:.04,desc:"新幹線や在来線を走らせる鉄道会社。"},
+  {code:"M13",name:"ルミナ化粧品",sector:"化粧品",grp:2,base:2500,vol:.30,beta:.8,eps:70,dps:40,g:.05,desc:"化粧品やスキンケア用品をつくる会社。海外からの旅行客の買い物も売上に影響する。"},
+  {code:"M14",name:"クロガネ製鉄",sector:"鉄鋼",grp:0,base:1900,vol:.32,beta:1.2,eps:230,dps:100,g:.03,desc:"車や建物に使う鉄をつくる会社。景気が良いと鉄がたくさん売れる。"},
+  {code:"M15",name:"スマイルマート",sector:"小売",grp:2,base:5200,vol:.22,beta:.6,eps:210,dps:70,g:.05,desc:"全国にコンビニを展開するチェーン。"},
+  {code:"M16",name:"ロケットAI",sector:"情報・通信",grp:1,base:1200,vol:.60,beta:1.5,eps:8,dps:0,g:.15,desc:"AIサービスを開発する新しい会社。まだ利益は少ないが、成長への期待が大きい。値動きが非常に激しい。"},
+];
+const GROUPS = ["景気敏感株","ハイテク株","ディフェンシブ株","金融株"];
+const N = STOCKS.length, G = GROUPS.length;
+/* ====== ここを設定 ====== */
+const FIREBASE_CONFIG = {
+  // Firebaseコンソール →（歯車）プロジェクトの設定 → マイアプリ の firebaseConfig をそのまま貼り付け
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  appId: ""
+};
+const SEASON = "2026-1";              // シーズン名。変えると新しいランキング（全員リスタート）
+/* ======================== */
+const CASH0 = 1000000;
+const SEED = 202;             // この数を変えると、まったく別の市場になる
+
+/* ---------- 時間の設定 ---------- */
+const START = Date.UTC(2026,4,31,15,0,0);   // 2026-06-01 00:00 日本時間 = 市場の始まり
+const TICK_MS = 5*60*1000;                  // 5分ごとに株価が動く
+const TPD = 288;                            // 1日あたりの回数
+const TPY = TPD*365;
+const serverNow = () => Date.now() + Store.offset;
+const nowTick = () => Math.floor((serverNow()-START)/TICK_MS);
+const tickOfTs = ts => Math.floor((ts-START)/TICK_MS);
+
+/* ---------- 乱数（全員が同じ株価になるよう、整数演算と四則演算だけで計算） ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function mix32(h){h|=0;h^=h>>>16;h=Math.imul(h,0x85ebca6b);h^=h>>>13;h=Math.imul(h,0xc2b2ae35);h^=h>>>16;return h>>>0;}
+const SQ3 = 1.7320508075688772;
+const nrm = r => (r()+r()+r()+r()-2)*SQ3;
+const K_TICK = 0.0029814239699997198;       // 0.8/√(250×288)：年率の変動率→5分あたり（ニュースによる動きの分を差し引き）
+const MR = 1/(90*TPD);                        // 長期トレンドへ戻ろうとする力
+
+const P = STOCKS.map(s=>{const a=Math.min(.75,.5*s.beta),b=.4;return{a,b,c:Math.sqrt(1-a*a-b*b),sd:s.vol*K_TICK};});
+
+/* ---------- ニュース（イベント） ---------- */
+const TPL_GOOD = [
+  ["{n}、今期の利益が過去最高に（決算発表）","決算で利益が予想より多いと、「これからも稼げそう」と期待されて株価は上がりやすい。"],
+  ["{n}、海外の大手企業と業務提携を発表","提携で売上が増えそうだと期待されると、株は買われやすい。"],
+  ["{n}の新商品が大ヒット、品切れの店も","商品が売れる＝会社の利益が増える見込み。株価にはプラス。"],
+  ["{n}、配当を増やすと発表（増配）","配当が増えると、株を持っている魅力が高まり、買いたい人が増える。"],
+];
+const TPL_BAD = [
+  ["{n}、業績予想を引き下げ（下方修正）","会社が利益の見通しを下げると、期待がしぼんで株価は下がりやすい。"],
+  ["{n}の工場でトラブル、生産を一時停止","商品をつくれない間は売上が減る。株価にはマイナス。"],
+  ["{n}の主力商品に不具合、自主回収へ","回収の費用がかかり、ブランドの信頼も下がる心配から売られやすい。"],
+  ["{n}、ライバル会社に押されて販売が不振","シェア（市場での取り分）を奪われると、将来の利益が心配されて売られる。"],
+];
+const GRP_NEWS = [
+  [["円安が進み、輸出に強い景気敏感株に買い","円安になると、海外で稼いだお金を円に直したときに増えるため、輸出企業の利益が増える。"],
+   ["世界の景気が悪くなる心配から、景気敏感株が売られる","景気の影響を受けやすい業種は、景気が悪くなりそうなときに下がりやすい。"]],
+  [["AI需要が伸びるとの見方から、ハイテク株が上昇","成長が期待される分野の株は、期待が高まると大きく買われる。"],
+   ["アメリカのハイテク株安を受けて、ハイテク株に売り","海外の市場の動きは、日本の同じ業種の株にも影響しやすい。"]],
+  [["相場が不安定な中、値動きの安定したディフェンシブ株に資金が集まる","生活に欠かせない商品・サービスの会社は、景気が悪くても業績が落ちにくい。"],
+   ["景気回復への期待から、ディフェンシブ株からほかの株へ資金が移る","景気が良くなりそうなときは、より大きく伸びそうな株にお金が移りやすい。"]],
+  [["金利が上がるとの見通しで、銀行株が買われる","銀行はお金を貸して利息で稼ぐので、金利が上がると利益が増えやすい。"],
+   ["金利が下がるとの見方から、銀行株が売られる","金利が下がると、銀行が貸し出しで得られる利息が減る。"]],
+];
+const MKT_NEWS = [
+  ["海外の株式市場が大幅高、マナビ市場もほぼ全面高","世界の市場はつながっている。海外で株が上がると日本でも買われやすい。"],
+  ["世界的な株安の流れを受けて、マナビ市場はほぼ全面安","市場全体が下がるときは、良い会社の株でもいっしょに下がることが多い。"],
+];
+
+const eventsByDay = [];   // eventsByDay[d] = [{tick,kind,target,mag,head,lesson}]
+function genDay(d){
+  if(eventsByDay[d]) return eventsByDay[d];
+  const r = mulberry32(mix32(SEED ^ Math.imul(d+1,0x9E3779B1))); r(); r();
+  const u = r(); const cnt = u<.25?0:(u<.75?1:2);
+  const evs = [];
+  for(let k=0;k<cnt;k++){
+    const tick = d*TPD + 96 + Math.floor(r()*150);   // 8:00〜20:30 ごろ
+    const kind = r(), good = r()<.5, m = r(), pick = Math.floor(r()*4), who = r();
+    let e;
+    if(kind<.7){
+      const i = Math.floor(who*N), tp=(good?TPL_GOOD:TPL_BAD)[pick];
+      e = {tick,kind:"stock",target:i,mag:(.03+m*.06)*(good?1:-1),head:tp[0].replace("{n}",STOCKS[i].name),lesson:tp[1]};
+    }else if(kind<.9){
+      const g = Math.floor(who*G), tp=GRP_NEWS[g][good?0:1];
+      e = {tick,kind:"group",target:g,mag:(.015+m*.025)*(good?1:-1),head:tp[0],lesson:tp[1]};
+    }else{
+      const tp = MKT_NEWS[good?0:1];
+      e = {tick,kind:"market",target:-1,mag:(.01+m*.02)*(good?1:-1),head:tp[0],lesson:tp[1]};
+    }
+    evs.push(e);
+  }
+  evs.sort((a,b)=>a.tick-b.tick);
+  return eventsByDay[d]=evs;
+}
+
+/* ---------- 株価シミュレーション ---------- */
+let cap = 0, simT = 0;
+let hist = STOCKS.map(()=>new Float32Array(0));
+let idxHist = new Float32Array(0);
+const cur = Float64Array.from(STOCKS.map(s=>s.base));
+const jumpLeft = new Float64Array(N), jumpCnt = new Int32Array(N);
+const rng = mulberry32(SEED);
+const zg = new Float64Array(G);
+
+function grow(need){
+  if(need<cap) return;
+  const nc = need + TPD*30;
+  hist = hist.map(h=>{const a=new Float32Array(nc);a.set(h);return a;});
+  const ni = new Float32Array(nc); ni.set(idxHist); idxHist = ni;
+  cap = nc;
+}
+function recordIdx(t){let s=0;for(let i=0;i<N;i++)s+=cur[i]/STOCKS[i].base;idxHist[t]=1000*s/N;}
+function addJump(i,mag){jumpLeft[i]+=mag;jumpCnt[i]=6;}
+
+function simulateTo(T){
+  grow(T+1);
+  if(simT===0 && hist[0][0]===0){for(let i=0;i<N;i++)hist[i][0]=cur[i];recordIdx(0);}
+  let evDay=-1, evs=[], ep=0;
+  for(let t=simT+1;t<=T;t++){
+    const d = Math.floor(t/TPD);
+    if(d!==evDay){evDay=d;evs=genDay(d);ep=0;}
+    while(ep<evs.length && evs[ep].tick===t){
+      const e=evs[ep++];
+      if(e.kind==="stock") addJump(e.target,e.mag);
+      else for(let i=0;i<N;i++){ if(e.kind==="market") addJump(i,e.mag*STOCKS[i].beta); else if(STOCKS[i].grp===e.target) addJump(i,e.mag); }
+    }
+    while(ep<evs.length && evs[ep].tick<t) ep++;
+    const zm = nrm(rng);
+    for(let g=0;g<G;g++) zg[g]=nrm(rng);
+    for(let i=0;i<N;i++){
+      const s=STOCKS[i], p=P[i];
+      const zi = nrm(rng);
+      const target = s.base*(1+s.g*t/TPY);
+      let r = p.sd*(p.a*zm + p.b*zg[s.grp] + p.c*zi) + s.g/TPY - MR*(cur[i]/target-1);
+      if(jumpCnt[i]>0){const step=jumpLeft[i]/jumpCnt[i];r+=step;jumpLeft[i]-=step;jumpCnt[i]--;}
+      let np = cur[i]*(1+r); if(np<10) np=10;
+      cur[i]=np; hist[i][t]=np;
+    }
+    recordIdx(t);
+  }
+  if(T>simT) simT=T;
+}
+
+/* ---------- 便利関数 ---------- */
+const yen = v => Math.round(v).toLocaleString("ja-JP");
+const price = (i,t) => Math.round(hist[i][Math.max(0,Math.min(t,simT))]);
+const dayOf = t => Math.floor(t/TPD);
+const prevClose = (i,t) => { const d=dayOf(t); return d===0 ? STOCKS[i].base : price(i,d*TPD-1); };
+const fmtDT = new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+const fmtD = new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",month:"numeric",day:"numeric"});
+const fmtHM = new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit"});
+const tDate = t => new Date(START + t*TICK_MS);
+function chg(now,base){const d=now-base,p=base?d/base*100:0;const cls=d>0?"up":d<0?"down":"flat";const mk=d>0?"▲":d<0?"▼":"±";return{cls,txt:`${mk}${yen(Math.abs(d))}`,pct:`${d>0?"+":d<0?"−":"±"}${Math.abs(p).toFixed(2)}%`};}
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- データ（Firebase Realtime Database） ----------
+   investChallenge/{SEASON}/players/{uid} = {name, joinedAt}
+   investChallenge/{SEASON}/trades/{uid}/{id} = {ts, i, side, q}   ※売買の値段は保存せず、ts（サーバー時刻）の株価で計算
+   investChallenge/{SEASON}/joins/{uid} = 教室コード（本人も読めない）
+   investChallenge/{SEASON}/config/classCode = 教室コード（先生がコンソールで設定）
+   URLの末尾に ?mock を付けると、Firebaseなしの練習用モードで動きます。 */
+const MOCK = /[?&]mock\b/.test(location.search);
+const Store = {
+  ready:false, error:null, uid:null, offset:0, players:{}, trades:{}, onChange:()=>{}, ref:null,
+  async init(){
+    if(MOCK) return this.initMock();
+    if(!window.firebase){throw new Error("Firebaseを読み込めませんでした。インターネット接続を確認してください。");}
+    if(!FIREBASE_CONFIG.apiKey){throw new Error("Firebaseの設定（FIREBASE_CONFIG）がまだ入っていません。");}
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const db=firebase.database();
+    db.ref(".info/serverTimeOffset").on("value",s=>{this.offset=s.val()||0;});
+    const cred = firebase.auth().currentUser || (await new Promise(r=>{const u=firebase.auth().onAuthStateChanged(x=>{u();r(x);});})) || (await firebase.auth().signInAnonymously()).user;
+    this.uid = cred.uid;
+    this.ref = db.ref("investChallenge/"+SEASON);
+    await new Promise((res,rej)=>{
+      let a=false,b=false; const done=()=>{if(a&&b&&!this.ready){this.ready=true;res();}};
+      this.ref.child("players").on("value",s=>{this.players=s.val()||{};a=true;done();this.onChange();},rej);
+      this.ref.child("trades").on("value",s=>{this.trades=s.val()||{};b=true;done();this.onChange();},rej);
+    });
+  },
+  async join(name,code){
+    if(MOCK){ if(code!=="manabi") throw new Error("code"); this.players[this.uid]={name,joinedAt:serverNow()}; this.saveMock(); this.onChange(); return; }
+    const upd={}; upd["joins/"+this.uid]=code; upd["players/"+this.uid]={name,joinedAt:firebase.database.ServerValue.TIMESTAMP};
+    try{ await this.ref.update(upd); }catch(e){ throw new Error("code"); }
+  },
+  async addTrade(i,side,q){
+    if(MOCK){ const m=this.trades[this.uid]||(this.trades[this.uid]={}); const ts=serverNow(); m["t"+ts]={ts,i,side,q}; this.saveMock(); this.onChange(); return ts; }
+    const r=this.ref.child("trades/"+this.uid).push();
+    await r.set({ts:firebase.database.ServerValue.TIMESTAMP,i,side,q});
+    const snap=await r.child("ts").get(); return snap.val();
+  },
+  /* 練習用モード：架空のクラスメイト付き */
+  initMock(){
+    let saved=null; try{saved=JSON.parse(localStorage.getItem("manabi-mock")||"null");}catch(e){}
+    this.uid="me";
+    const now=Date.now(), r=mulberry32(99), names=["たける","さくら","ゆうと","ひなた","そうた","めい","はると","りん"];
+    names.forEach((n,k)=>{const uid="demo"+k, j=now-86400000*(3+Math.floor(r()*8)); this.players[uid]={name:n,joinedAt:j}; const tr={};
+      for(let x=0;x<6;x++){const ts=j+Math.floor(r()*(now-j)); tr["t"+x]={ts,i:Math.floor(r()*N),side:"buy",q:10+Math.floor(r()*120)};} this.trades[uid]=tr;});
+    if(saved){ if(saved.player) this.players.me=saved.player; if(saved.trades) this.trades.me=saved.trades; }
+    this.ready=true;
+  },
+  saveMock(){ try{localStorage.setItem("manabi-mock",JSON.stringify({player:this.players.me,trades:this.trades.me}));}catch(e){} },
+};
+
+/* 全員の売買を株価で検証しながら並べ直し、総資産を出す（ルール違反の売買は無視） */
+let me = null, board = [];
+function buildPlayers(){
+  const T=simT, res=[]; me=null;
+  for(const uid in Store.players){
+    const pl=Store.players[uid]||{};
+    const raw=Object.values(Store.trades[uid]||{}).filter(x=>x&&typeof x.ts==="number").sort((a,b)=>a.ts-b.ts);
+    let cash=CASH0; const h={}, list=[];
+    for(const x of raw){
+      const t=tickOfTs(x.ts), i=x.i, q=x.q;
+      if(t<0||t>T||!Number.isInteger(i)||i<0||i>=N||!Number.isInteger(q)||q<1) continue;
+      const p=price(i,t);
+      if(x.side==="buy"){ if(q*p>cash) continue; cash-=q*p; h[i]=(h[i]||0)+q; }
+      else if(x.side==="sell"){ if((h[i]||0)<q) continue; cash+=q*p; h[i]-=q; }
+      else continue;
+      list.push({t,i,side:x.side,q,p});
+    }
+    let v=cash; for(const k in h) v+=h[k]*price(+k,T);
+    const o={uid,name:String(pl.name||"？").slice(0,16),startTick:Math.min(T,Math.max(0,tickOfTs(pl.joinedAt||serverNow()))),trades:list,total:v,stocks:Object.values(h).filter(n=>n>0).length};
+    res.push(o); if(uid===Store.uid) me=o;
+  }
+  board=res.sort((a,b)=>b.total-a.total);
+}
+function replay(upTo){
+  let cash=CASH0; const h={};
+  for(const tr of me.trades){
+    if(tr.t>upTo) break;
+    const x = h[tr.i] || (h[tr.i]={qty:0,cost:0});
+    if(tr.side==="buy"){cash-=tr.q*tr.p;x.qty+=tr.q;x.cost+=tr.q*tr.p;}
+    else{const avg=x.cost/x.qty;x.cost-=avg*tr.q;x.qty-=tr.q;cash+=tr.q*tr.p;if(x.qty===0)delete h[tr.i];}
+  }
+  return {cash,h};
+}
+function assetsAt(t){const {cash,h}=replay(t);let v=0;for(const i in h)v+=h[i].qty*price(+i,t);return{cash,stock:v,total:cash+v,h};}
+
+/* ---------- 画面の状態 ---------- */
+const ui = {view:"market", stock:0, range:"1d", prange:"all", qty:100, msg:null};
+let charts = [];
+
+function setView(v,extra){Object.assign(ui,{view:v,msg:null},extra||{});render();window.scrollTo(0,0);}
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setView(b.dataset.v);});
+
+/* ---------- グラフ ---------- */
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw)));const f=raw/p;return (f<1.5?1:f<3?2:f<7?5:10)*p;}
+function drawChart(el,o){
+  const W = el.clientWidth||600, H = o.h||210, pl=58, pr=12, pt=10, pb=24;
+  const all = o.series.flatMap(s=>s.vals); if(o.baseline!=null) all.push(o.baseline);
+  let lo=Math.min(...all), hi=Math.max(...all); const minR=Math.abs(hi)*.01||1; if(hi-lo<minR){const m=(hi+lo)/2;hi=m+minR/2;lo=m-minR/2;}
+  const padv=(hi-lo)*.08; lo-=padv; hi+=padv;
+  const step=niceStep((hi-lo)/4); const y0=Math.ceil(lo/step)*step;
+  const X = i => pl + (o.domain<=1?0:i/(o.domain-1))*(W-pl-pr);
+  const Y = v => pt + (hi-v)/(hi-lo)*(H-pt-pb);
+  let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(o.label||"グラフ")}">`;
+  for(let v=y0; v<=hi; v+=step){s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${pl-8}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${o.fmtY(v)}</text>`;}
+  for(const xl of o.xLabels){s+=`<text x="${X(xl.i)}" y="${H-6}" text-anchor="${xl.i===0?"start":xl.i>=o.domain-1?"end":"middle"}" font-size="11" fill="var(--muted)">${xl.label}</text>`;}
+  if(o.baseline!=null){s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(o.baseline)}" y2="${Y(o.baseline)}" stroke="var(--muted)" stroke-dasharray="3 4" stroke-width="1"/><text x="${W-pr}" y="${Y(o.baseline)-5}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(o.baselineLabel||"")}</text>`;}
+  o.series.forEach((sr,k)=>{
+    if(!sr.vals.length) return;
+    const d = sr.vals.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+","+Y(v).toFixed(1)).join("");
+    if(k===0 && o.area){s+=`<path d="${d}L${X(sr.vals.length-1)},${H-pb}L${X(0)},${H-pb}Z" fill="var(--accent)" opacity=".08"/>`;}
+    s+=`<path d="${d}" fill="none" stroke="${sr.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" ${sr.dash?'stroke-dasharray="5 4"':""}/>`;
+  });
+  s+=`<g class="hov" style="display:none"><line class="cx" y1="${pt}" y2="${H-pb}" stroke="var(--muted)" stroke-width="1"/>${o.series.map(sr=>`<circle r="4.5" fill="${sr.color}" stroke="var(--card)" stroke-width="2"/>`).join("")}</g>`;
+  s+=`<rect x="${pl}" y="0" width="${W-pl-pr}" height="${H}" fill="transparent"/></svg><div class="tip"></div>`;
+  el.innerHTML = s;
+  const svg=el.querySelector("svg"), hov=el.querySelector(".hov"), tip=el.querySelector(".tip"), n=o.series[0].vals.length;
+  const show = ev => {
+    const rc=svg.getBoundingClientRect(); const px=(ev.clientX-rc.left)*W/rc.width;
+    let i=Math.round((px-pl)/(W-pl-pr)*(o.domain-1)); i=Math.max(0,Math.min(n-1,i));
+    hov.style.display=""; const x=X(i);
+    hov.querySelector(".cx").setAttribute("x1",x); hov.querySelector(".cx").setAttribute("x2",x);
+    hov.querySelectorAll("circle").forEach((c,k)=>{const v=o.series[k].vals[i];c.setAttribute("cx",x);c.setAttribute("cy",Y(v));});
+    tip.innerHTML=`<div class="muted">${o.fmtX(i)}</div>`+o.series.map(sr=>`<div>${o.series.length>1?`<span style="color:${sr.color}">━</span> ${esc(sr.name)}：`:""}<b>${o.fmtTip(sr.vals[i])}</b></div>`).join("");
+    tip.style.display="block";
+    const tx=x/W*rc.width; const tw=tip.offsetWidth;
+    tip.style.left=Math.max(0,Math.min(rc.width-tw,tx-tw/2))+"px"; tip.style.top="-6px"; tip.style.transform="translateY(-100%)";
+  };
+  const hide=()=>{hov.style.display="none";tip.style.display="none";};
+  svg.addEventListener("pointermove",show); svg.addEventListener("pointerdown",show); svg.addEventListener("pointerleave",hide);
+}
+function drawAll(){for(const c of charts){const el=document.getElementById(c.id);if(el)drawChart(el,c.o);}}
+let rz; window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(drawAll,120);});
+
+/* 株価・指数の系列を作る */
+function seriesFor(getter,range,T){
+  const D=dayOf(T);
+  if(range==="1d"){
+    const s=D*TPD, vals=[]; for(let t=s;t<=T;t++)vals.push(getter(t));
+    return {vals,domain:TPD,fmtX:i=>fmtDT.format(tDate(s+i)),
+      xLabels:[0,72,144,216,287].map(i=>({i,label:(i===287?24:i/12)+":00"}))};
+  }
+  const nd = range==="1m"?30:90, d0=Math.max(0,D-nd+1), days=[];
+  for(let d=d0;d<=D;d++)days.push(Math.min(d*TPD+TPD-1,T));
+  const vals=days.map(getter);
+  const L=days.length, picks=[0,Math.floor((L-1)/3),Math.floor(2*(L-1)/3),L-1];
+  return {vals,domain:L,fmtX:i=>fmtD.format(tDate(days[i]))+(days[i]===T?"（現在）":"（終値）"),
+    xLabels:[...new Set(picks)].map(i=>({i,label:fmtD.format(tDate(days[i]))}))};
+}
+const rangeSeg = (cur,attr) => `<div class="seg" data-seg="${attr}">${[["1d","1日"],["1m","1か月"],["3m","3か月"]].map(([k,l])=>`<button data-r="${k}" class="${cur===k?"on":""}">${l}</button>`).join("")}</div>`;
+
+/* ---------- 画面：市場 ---------- */
+function viewMarket(T){
+  const D=dayOf(T), iv=idxHist[T], ip=D===0?1000:idxHist[D*TPD-1], c=chg(iv,ip);
+  const sr=seriesFor(t=>idxHist[t],ui.range,T);
+  charts.push({id:"c-idx",o:{...sr,label:"マナビ指数の推移",series:[{name:"マナビ指数",vals:sr.vals,color:"var(--accent)"}],area:true,
+    baseline:ui.range==="1d"?ip:null,baselineLabel:"前日終値",fmtY:v=>v.toFixed(0),fmtTip:v=>v.toFixed(2)}});
+  let rows="";
+  STOCKS.forEach((s,i)=>{
+    const p=price(i,T), pc=prevClose(i,T), cc=chg(p,pc);
+    const st=D*TPD, pts=[]; for(let t=st;t<=T;t+=6)pts.push(hist[i][t]); pts.push(hist[i][T]);
+    const lo=Math.min(...pts,pc), hi=Math.max(...pts,pc), rg=hi-lo||1;
+    const poly=pts.map((v,k)=>`${(k/(TPD/6)*78).toFixed(1)},${(26-(v-lo)/rg*24).toFixed(1)}`).join(" ");
+    const by=(26-(pc-lo)/rg*24).toFixed(1);
+    rows+=`<button class="lrow" data-stock="${i}"><div><div class="lname">${esc(s.name)}</div><div class="lsec">${s.code}・${s.sector}</div></div>
+      <svg class="spark" viewBox="0 0 78 28" aria-hidden="true"><line x1="0" x2="78" y1="${by}" y2="${by}" stroke="var(--muted)" stroke-dasharray="2 3" stroke-width="1"/><polyline points="${poly}" fill="none" stroke="var(--ink2)" stroke-width="1.5"/></svg>
+      <div class="lprice"><b>${yen(p)}円</b><span class="${cc.cls}">${cc.txt}（${cc.pct}）</span></div></button>`;
+  });
+  return `<div class="card"><div class="row between"><div><div class="ink2 small">マナビ指数（全16銘柄の平均・6月1日＝1000）</div>
+    <div class="big">${iv.toFixed(2)}</div><div class="${c.cls} num">${iv>ip?"▲":iv<ip?"▼":"±"}${Math.abs(iv-ip).toFixed(2)}（${c.pct}）<span class="muted small"> 前日比</span></div></div>
+    ${rangeSeg(ui.range,"range")}</div><div class="chart" id="c-idx"></div></div>
+    <div class="list"><div class="lhead"><span>銘柄（タップで売買）</span><span>今日の動き／株価・前日比</span></div>${rows}</div>`;
+}
+
+/* ---------- 画面：銘柄の詳細と売買 ---------- */
+function viewStock(T){
+  const i=ui.stock, s=STOCKS[i], p=price(i,T), pc=prevClose(i,T), c=chg(p,pc);
+  const sr=seriesFor(t=>hist[i][t],ui.range,T);
+  charts.push({id:"c-st",o:{...sr,label:s.name+"の株価",series:[{name:s.name,vals:sr.vals,color:"var(--accent)"}],area:true,
+    baseline:ui.range==="1d"?pc:null,baselineLabel:"前日終値",fmtY:v=>yen(v),fmtTip:v=>yen(v)+"円"}});
+  const a=assetsAt(T), held=a.h[i];
+  const q=Math.max(0,Math.floor(ui.qty||0)), cost=q*p, maxBuy=Math.floor(a.cash/p);
+  const per=s.eps>0?(p/s.eps).toFixed(1)+"倍":"—（赤字・利益が小さい）", dy=(s.dps/p*100).toFixed(2)+"%";
+  const own=[], mkt=[]; for(let d=dayOf(T);d>=Math.max(0,dayOf(T)-90);d--){for(const e of genDay(d).slice().reverse()){if(e.tick>T)continue;if((e.kind==="stock"&&e.target===i)||(e.kind==="group"&&e.target===s.grp))own.push(e);else if(e.kind==="market")mkt.push(e);}}
+  const related=own.slice(0,4).concat(mkt.slice(0,Math.max(1,4-own.length))).sort((x,y)=>y.tick-x.tick);
+  return `<button class="back" data-go="market">← 市場にもどる</button>
+  <div class="card"><div class="row between" style="align-items:flex-start;flex-wrap:wrap"><div>
+    <div class="ink2 small">${s.code}・${s.sector}・${GROUPS[s.grp]}</div><h2 style="font-size:20px">${esc(s.name)}</h2>
+    <div class="big">${yen(p)}<span style="font-size:16px">円</span></div><div class="${c.cls} num">${c.txt}（${c.pct}）<span class="muted small"> 前日比</span></div></div>
+    ${rangeSeg(ui.range,"range")}</div><div class="chart" id="c-st"></div>
+    <p class="ink2 small" style="margin:10px 0 0">${esc(s.desc)}</p>
+    <div class="grid2 grid4" style="margin-top:10px">
+      <div class="stat"><div class="k">PER（株価収益率）</div><div class="v">${per}</div></div>
+      <div class="stat"><div class="k">配当利回り</div><div class="v">${dy}</div></div>
+      <div class="stat"><div class="k">持っている株数</div><div class="v">${held?held.qty.toLocaleString()+"株":"0株"}</div></div>
+      <div class="stat"><div class="k">買った平均の値段</div><div class="v">${held?yen(held.cost/held.qty)+"円":"—"}</div></div>
+    </div></div>
+  <div class="card"><h2>売買する</h2>
+    <div class="small ink2">使えるお金：<b class="num" style="color:var(--ink)">${yen(a.cash)}円</b>　／　最大 ${maxBuy.toLocaleString()}株 買える</div>
+    <div class="qty" style="margin-top:10px"><input id="qty" type="number" inputmode="numeric" min="1" step="1" value="${q||""}" aria-label="株数"> 株
+      <button class="btn sm" data-q="1">1</button><button class="btn sm" data-q="10">10</button><button class="btn sm" data-q="100">100</button><button class="btn sm" data-q="max">最大</button>${held?`<button class="btn sm" data-q="all">全部売る</button>`:""}</div>
+    <div class="small ink2" style="margin-top:8px">金額の目安：<b class="num" style="color:var(--ink)" id="cost">${yen(cost)}円</b>（今の株価 ${yen(p)}円 × ${q.toLocaleString()}株・手数料なし）</div>
+    <div class="row" style="margin-top:12px"><button class="btn buy" data-trade="buy" style="flex:1">買う</button><button class="btn sell" data-trade="sell" style="flex:1" ${held?"":"disabled"}>売る</button></div>
+    ${ui.msg?`<div class="msg ${ui.msg.ok?"ok":"ng"}">${esc(ui.msg.text)}</div>`:""}
+  </div>
+  <div class="card"><h2>関係するニュース</h2>${related.length?related.map(newsItem).join(""):`<p class="muted small">最近の関係するニュースはありません。</p>`}</div>`;
+}
+
+let sending=false;
+async function trade(side){
+  if(sending) return;
+  const T=simT, i=ui.stock, p=price(i,T), q=Math.floor(ui.qty||0), a=assetsAt(T);
+  if(!(q>=1)){ui.msg={ok:false,text:"株数を1以上の整数で入れてください。"};return render();}
+  if(side==="buy"){
+    if(q*p>a.cash){ui.msg={ok:false,text:`お金が足りません（必要 ${yen(q*p)}円／使えるお金 ${yen(a.cash)}円）。`};return render();}
+  }else{
+    const h=a.h[i]; if(!h||h.qty<q){ui.msg={ok:false,text:`持っている株数（${h?h.qty:0}株）より多くは売れません。`};return render();}
+  }
+  sending=true; ui.msg={ok:true,text:"注文を送っています…"}; render();
+  try{
+    const ts=await Store.addTrade(i,side,q);
+    const t=tickOfTs(ts); let done=false;
+    for(let k=0;k<5&&!done;k++){
+      if(k) await new Promise(r=>setTimeout(r,400));
+      simulateTo(Math.max(t,simT)); buildPlayers();
+      done=!!(me&&me.trades.some(x=>x.t===t&&x.i===i&&x.q===q&&x.side===side));
+    }
+    const ep=price(i,t), s=STOCKS[i].name;
+    ui.msg = done
+      ? {ok:true,text:`${s}を ${q.toLocaleString()}株、${yen(ep)}円で${side==="buy"?"買い":"売り"}ました（合計 ${yen(q*ep)}円）。`}
+      : {ok:false,text:"注文の瞬間に株価が動いたため、注文は成立しませんでした。もう一度ためしてください。"};
+  }catch(e){
+    ui.msg={ok:false,text:"注文を送れませんでした。通信状態を確認して、もう一度ためしてください。"};
+  }
+  sending=false; render();
+}
+
+/* ---------- 画面：わたしの成績 ---------- */
+function viewPortfolio(T){
+  const a=assetsAt(T), pl=a.total-CASH0, c=chg(a.total,CASH0);
+  const s0=me.startTick, bench=CASH0*idxHist[T]/idxHist[s0], bc=chg(bench,CASH0);
+  // 資産の推移（1時間ごと）
+  const step = (T-s0)>TPD*20?TPD/4:12, ticks=[]; for(let t=s0;t<T;t+=step)ticks.push(t); ticks.push(T);
+  let tp=0, cash=CASH0; const h={}; const mine=[], bm=[];
+  for(const t of ticks){
+    while(tp<me.trades.length&&me.trades[tp].t<=t){const tr=me.trades[tp++];if(tr.side==="buy"){cash-=tr.q*tr.p;h[tr.i]=(h[tr.i]||0)+tr.q;}else{cash+=tr.q*tr.p;h[tr.i]-=tr.q;}}
+    let v=cash; for(const k in h)v+=h[k]*hist[k][t]; mine.push(v); bm.push(CASH0*idxHist[t]/idxHist[s0]);
+  }
+  const L=ticks.length, picks=[...new Set([0,Math.floor((L-1)/2),L-1])];
+  if(L>=3) charts.push({id:"c-pf",o:{vals:mine,domain:L,label:"総資産の推移",
+    series:[{name:"わたしの総資産",vals:mine,color:"var(--accent)"},{name:"もし全部を市場平均に投資していたら",vals:bm,color:"var(--bench)",dash:true}],
+    baseline:CASH0,baselineLabel:"スタート 100万円",fmtY:v=>(v/10000).toFixed(0)+"万",fmtTip:v=>yen(v)+"円",
+    fmtX:i=>fmtDT.format(tDate(ticks[i])),xLabels:picks.map(i=>({i,label:fmtD.format(tDate(ticks[i]))}))}});
+  let rows=""; const keys=Object.keys(a.h);
+  for(const k of keys){const i=+k,x=a.h[k],p=price(i,T),val=x.qty*p,g=val-x.cost,gc=chg(val,x.cost);
+    rows+=`<tr class="click" data-stock="${i}"><td><b>${esc(STOCKS[i].name)}</b></td><td>${x.qty.toLocaleString()}株</td><td>${yen(x.cost/x.qty)}</td><td>${yen(p)}</td><td>${yen(val)}</td><td class="${gc.cls}">${g>=0?"+":"−"}${yen(Math.abs(g))}<br><span class="small">${gc.pct}</span></td></tr>`;}
+  const hist5=me.trades.slice().reverse().slice(0,30).map(tr=>`<tr><td>${fmtDT.format(tDate(tr.t))}</td><td style="text-align:left">${esc(STOCKS[tr.i].name)}</td><td class="${tr.side==="buy"?"up":"down"}">${tr.side==="buy"?"買い":"売り"}</td><td>${tr.q.toLocaleString()}株</td><td>${yen(tr.p)}</td><td>${yen(tr.q*tr.p)}</td></tr>`).join("");
+  const beat = a.total>=bench;
+  return `<div class="card"><div class="ink2 small">${esc(me.name)} さんの総資産（現金＋株の値打ち）</div>
+    <div class="big">${yen(a.total)}<span style="font-size:16px">円</span></div>
+    <div class="${c.cls} num">${pl>=0?"+":"−"}${yen(Math.abs(pl))}円（${c.pct}）<span class="muted small"> スタートから</span></div>
+    <div class="grid2 grid4" style="margin-top:12px">
+      <div class="stat"><div class="k">現金</div><div class="v">${yen(a.cash)}円</div></div>
+      <div class="stat"><div class="k">株の値打ち</div><div class="v">${yen(a.stock)}円</div></div>
+      <div class="stat"><div class="k">持っている銘柄</div><div class="v">${keys.length}銘柄</div></div>
+      <div class="stat"><div class="k">市場平均なら</div><div class="v ${bc.cls}">${bc.pct}</div></div>
+    </div>
+    <div class="msg ${beat?"ok":"ng"}">${beat?"今のところ、市場平均（マナビ指数）に勝っています！":"今のところ、市場平均（マナビ指数）に負けています。どの株を選ぶか、もう一度考えてみよう。"}</div>
+    <div class="legend"><span><i style="border-color:var(--accent)"></i>わたしの総資産</span><span><i class="dash" style="border-color:var(--bench)"></i>もし全部を市場平均に投資していたら</span></div>
+    ${L>=3?`<div class="chart" id="c-pf"></div>`:`<p class="small muted" style="margin:10px 0 0">総資産のグラフは、はじめてから1時間ほどたつと表示されます。</p>`}</div>
+  <div class="card"><h2>持っている株</h2>${rows?`<div style="overflow-x:auto"><table><thead><tr><th>銘柄</th><th>株数</th><th>平均買値</th><th>今の株価</th><th>値打ち</th><th>損益</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<p class="muted small">まだ株を持っていません。「市場」から気になる会社を選んで買ってみよう。</p>`}</div>
+  <div class="card"><h2>売買の記録</h2>${hist5?`<div style="overflow-x:auto"><table><thead><tr><th>日時</th><th style="text-align:left">銘柄</th><th>売買</th><th>株数</th><th>株価</th><th>金額</th></tr></thead><tbody>${hist5}</tbody></table></div>`:`<p class="muted small">まだ売買していません。</p>`}</div>
+  <div class="card small ink2">記録はサーバーに保存されています。シーズン「${esc(SEASON)}」が終わるまで、やり直しはできません。</div>`;
+}
+
+/* ---------- 画面：ランキング ---------- */
+function viewRank(T){
+  let rank=0, prev=null;
+  const rows=board.map((p,k)=>{ if(prev===null||Math.round(p.total)!==Math.round(prev)) rank=k+1; prev=p.total;
+    const c=chg(p.total,CASH0), medal=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":"";
+    return `<tr class="${p.uid===Store.uid?"mine":""}"><td class="rk">${medal||rank}</td><td style="text-align:left"><b>${esc(p.name)}</b>${p.uid===Store.uid?' <span class="tag">あなた</span>':""}<div class="small muted">${p.stocks}銘柄・売買${p.trades.length}回</div></td><td>${yen(p.total)}円</td><td class="${c.cls}">${c.pct}</td></tr>`;}).join("");
+  const myRank = me ? board.findIndex(p=>p.uid===me.uid)+1 : 0;
+  return `<div class="card"><div class="row between" style="flex-wrap:wrap"><div><h2 style="margin:0">ランキング</h2><div class="small muted">シーズン「${esc(SEASON)}」・参加者 ${board.length}人・総資産の多い順</div></div>
+    ${myRank?`<div style="text-align:right"><div class="small ink2">あなたの順位</div><div class="big" style="font-size:26px">${myRank}<span style="font-size:14px">位</span></div></div>`:""}</div>
+    ${board.length?`<div style="overflow-x:auto;margin-top:8px"><table class="rank"><thead><tr><th style="text-align:center">順位</th><th style="text-align:left">名前</th><th>総資産</th><th>損益</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<p class="muted small">まだ参加者がいません。</p>`}
+    <p class="small muted" style="margin:10px 0 0">総資産＝現金＋持っている株を今の株価で計算した値打ち。ランキングは株価が動くたびに入れかわります。</p></div>`;
+}
+
+/* ---------- 画面：ニュース ---------- */
+function newsItem(e){
+  const T=simT; let tag, after="";
+  if(e.kind==="stock"){const i=e.target,b=price(i,e.tick-1),cc=chg(price(i,T),b);tag=`<span class="tag">${esc(STOCKS[i].name)}</span>`;after=`<span class="small ink2">このニュースの直前から今までの株価：<span class="${cc.cls}">${cc.pct}</span></span>`;}
+  else if(e.kind==="group"){tag=`<span class="tag">${GROUPS[e.target]}</span>`;}
+  else tag=`<span class="tag">市場全体</span>`;
+  return `<div class="news"><div class="t">${fmtDT.format(tDate(e.tick))}</div><div class="h">${tag}${esc(e.head)}</div>${after}<div class="lesson">💡 ${esc(e.lesson)}</div></div>`;
+}
+function viewNews(T){
+  const out=[]; for(let d=dayOf(T);d>=0&&out.length<40;d--){for(const e of genDay(d).slice().reverse()){if(e.tick<=T)out.push(e);}}
+  return `<div class="card"><h2>マーケットニュース</h2><p class="small muted" style="margin:0 0 6px">ニュースは株価を動かします。ニュースのあと株価がどう動いたか見てみよう。</p>${out.slice(0,40).map(newsItem).join("")}</div>`;
+}
+
+/* ---------- 画面：学ぶ ---------- */
+function viewLearn(){
+  return `<div class="card learn"><h2>投資チャレンジのルール</h2>
+  <p>・スタートのお金は <b>100万円</b>（もちろん本物のお金ではありません）。</p>
+  <p>・株価は <b>5分ごと</b>に動きます。市場は毎日24時間開いていて、いつでも売買できます。</p>
+  <p>・<b>全員が同じ株価</b>を見ています。</p>
+  <p>・売買は「今の株価」ですぐに成立します。手数料はかかりません。1株から買えます。</p>
+  <p>・成績は「ランキング」でみんなと比べられます。順位は総資産（現金＋株の値打ち）の多い順です。</p>
+  <p>・最初に使ったスマホ・ブラウザで続きから遊べます。別の端末で始めると、新しい参加者になります。</p>
+  <h3>株ってなに？</h3><p>会社がお金を集めるために発行するものが「株（株式）」です。株を買うと、その会社の持ち主（株主）の一人になります。会社がもうかると、配当を受け取れたり、株の値段が上がったりします。</p>
+  <h3>株価はどうして動くの？</h3><p>「買いたい人」が「売りたい人」より多いと上がり、少ないと下がります。決算（会社の成績発表）、新商品、景気、金利、海外の市場など、さまざまなニュースが人々の気持ちを動かします。</p>
+  <h3>前日比</h3><p>昨日の最後の株価（終値）と比べて、いくら上がったか・下がったか。日本では値上がりを<span class="up">赤（▲）</span>、値下がりを<span class="down">青や緑（▼）</span>で表すことが多いです。</p>
+  <h3>PER（株価収益率）</h3><p>株価が「1株あたりの利益」の何倍かを表す数字。高いほど「将来の成長への期待が大きい（または割高）」、低いほど「割安かもしれない」と考えます。</p>
+  <h3>配当利回り</h3><p>株価に対して、1年間にもらえる配当がどれくらいかを表す数字。このゲームでは配当は支払われませんが、会社選びの参考にしてみよう。</p>
+  <h3>分散投資</h3><p>1つの会社だけに全部のお金を使うと、その会社に悪いニュースが出たときに大きく損をします。いろいろな業種に分けて買うと、リスクを小さくできます。「卵を1つのカゴに盛るな」という言葉があります。</p>
+  <h3>市場平均（マナビ指数）と比べよう</h3><p>「わたしの成績」では、もし全部のお金を市場平均どおりに投資していたらどうなったかと比べられます。プロの投資家でも、市場平均に勝ち続けるのは簡単ではありません。</p>
+  <h3>この市場について</h3><p>マナビ市場の会社・株価・ニュースはすべて<b>架空</b>です。実在する会社とは関係ありません。株価の水準や値動きの大きさ、業種ごとの特徴は、実際の日本の株式市場を参考にしています。</p></div>`;
+}
+
+/* ---------- 描画 ---------- */
+function render(){
+  if(!Store.ready){ return; }
+  const T=nowTick(); simulateTo(T); buildPlayers();
+  if(!me) askName(); 
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===(ui.view==="stock"?"market":ui.view)));
+  document.getElementById("who").textContent = me?me.name+" さん":"";
+  charts=[]; let h="";
+  if(ui.view==="market")h=viewMarket(T);
+  else if(ui.view==="stock")h=viewStock(T);
+  else if(ui.view==="portfolio")h=me?viewPortfolio(T):"";
+  else if(ui.view==="news")h=viewNews(T);
+  else if(ui.view==="rank")h=viewRank(T);
+  else h=viewLearn();
+  h+=`<div class="foot">マナビ証券は学習用の架空の市場です。実在の企業・株価とは関係ありません。<br>個別指導 学び方の学校</div>`;
+  document.getElementById("main").innerHTML=h;
+  drawAll(); tickClock();
+}
+function tickClock(){document.getElementById("clock").textContent=fmtDT.format(new Date(serverNow()))+" 取引中（5分ごと更新）"+(MOCK?"・練習モード":"");}
+
+document.getElementById("main").addEventListener("click",e=>{
+  const t=e.target.closest("[data-stock],[data-go],[data-r],[data-q],[data-trade]"); if(!t)return;
+  if(t.dataset.stock!=null){setView("stock",{stock:+t.dataset.stock,qty:100});}
+  else if(t.dataset.go){setView(t.dataset.go);}
+  else if(t.dataset.r){ui.range=t.dataset.r;render();}
+  else if(t.dataset.q){const T=simT,i=ui.stock,p=price(i,T),a=assetsAt(T);
+    ui.qty = t.dataset.q==="max"?Math.floor(a.cash/p):t.dataset.q==="all"?(a.h[i]?a.h[i].qty:0):+t.dataset.q; ui.msg=null; render();}
+  else if(t.dataset.trade){trade(t.dataset.trade);}
+});
+document.getElementById("main").addEventListener("input",e=>{
+  if(e.target.id==="qty"){ui.qty=+e.target.value;const p=price(ui.stock,simT),q=Math.max(0,Math.floor(ui.qty||0));const c=document.getElementById("cost");if(c)c.textContent=yen(q*p)+"円";}
+});
+
+/* ---------- はじめての人 ---------- */
+let asking=false;
+function askName(){
+  if(asking) return; asking=true;
+  const m=document.getElementById("modal");
+  m.innerHTML=`<div class="modal"><form class="box" id="nf"><h2 style="margin:0 0 6px">投資チャレンジへようこそ！</h2>
+    <p class="small ink2" style="margin:0">架空の株式市場で、100万円（仮想のお金）を元手に株の売買を体験しよう。みんなとランキングで競えます。</p>
+    <input id="nm" maxlength="16" placeholder="ニックネーム（ランキングに表示）" autocomplete="off" required>
+    <input id="cd" placeholder="教室コード（先生に聞いてね）" autocomplete="off" required>
+    <div id="jerr" class="msg ng" style="display:none;margin:0 0 10px"></div>
+    <button class="btn pri" id="jbtn" style="width:100%">はじめる</button>
+    <p class="small muted" style="margin:10px 0 0">本名ではなくニックネームを使ってね。この端末・このブラウザで続きから遊べます。</p></form></div>`;
+  document.getElementById("nf").addEventListener("submit",async ev=>{
+    ev.preventDefault();
+    const n=document.getElementById("nm").value.trim().slice(0,16), c=document.getElementById("cd").value.trim(), er=document.getElementById("jerr"), b=document.getElementById("jbtn");
+    if(!n||!c) return;
+    b.disabled=true; er.style.display="none";
+    try{ await Store.join(n,c); m.innerHTML=""; asking=false; render(); }
+    catch(e){ er.textContent="教室コードがちがいます。先生に確認してね。"; er.style.display="block"; b.disabled=false; }
+  });
+  setTimeout(()=>{const el=document.getElementById("nm");if(el)el.focus();},50);
+}
+
+/* ---------- 起動 ---------- */
+document.getElementById("main").innerHTML=`<div class="card"><p class="ink2" style="margin:0">読み込み中…</p></div>`;
+let lastT=0, pend=false;
+Store.onChange=()=>{ if(pend) return; pend=true; setTimeout(()=>{pend=false; const a=document.activeElement; if(a&&(a.id==="qty"||a.id==="nm"||a.id==="cd")) return; render();},200); };
+Store.init().then(()=>{
+  render(); lastT=nowTick();
+  setInterval(()=>{const T=nowTick(); if(T!==lastT){const a=document.activeElement; if(a&&a.id==="qty")return; lastT=T; render();} else tickClock();},10000);
+}).catch(e=>{
+  document.getElementById("main").innerHTML=`<div class="card"><h2>はじめられませんでした</h2><p class="ink2">${esc(e.message||e)}</p></div>`;
+});
+</script>
+</body>
+</html>

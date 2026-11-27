@@ -1,0 +1,57 @@
+{
+  "investChallenge": {
+    "$season": {
+      "config": {
+        ".read": false,
+        ".write": false
+      },
+      "joins": {
+        "$uid": {
+          ".read": false,
+          ".write": "auth != null && auth.uid === $uid && !data.exists()",
+          ".validate": "newData.isString() && newData.val() === root.child('investChallenge').child($season).child('config').child('classCode').val()"
+        }
+      },
+      "players": {
+        ".read": "auth != null",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && !data.exists()",
+          ".validate": "newData.hasChildren(['name', 'joinedAt']) && newData.parent().parent().child('joins').child($uid).val() === root.child('investChallenge').child($season).child('config').child('classCode').val()",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 16"
+          },
+          "joinedAt": {
+            ".validate": "newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "trades": {
+        ".read": "auth != null",
+        "$uid": {
+          "$tid": {
+            ".write": "auth != null && auth.uid === $uid && !data.exists() && root.child('investChallenge').child($season).child('players').child($uid).exists()",
+            ".validate": "newData.hasChildren(['ts', 'i', 'side', 'q'])",
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "i": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 15"
+            },
+            "side": {
+              ".validate": "newData.val() === 'buy' || newData.val() === 'sell'"
+            },
+            "q": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 100000000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    }
+  }
+}
